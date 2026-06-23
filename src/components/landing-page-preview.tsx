@@ -9,10 +9,16 @@ import type {
 } from "@/types/landing-page";
 
 type LandingPagePreviewProps = {
+  onSelectSection: (sectionId: string) => void;
   page: LandingPage;
+  selectedSectionId: string;
 };
 
-export function LandingPagePreview({ page }: LandingPagePreviewProps) {
+export function LandingPagePreview({
+  onSelectSection,
+  page,
+  selectedSectionId,
+}: LandingPagePreviewProps) {
   return (
     <section className="space-y-4">
       <div>
@@ -24,14 +30,52 @@ export function LandingPagePreview({ page }: LandingPagePreviewProps) {
 
       <div className="overflow-hidden rounded-lg border border-slate-200">
         {page.sections.map((section) => (
-          <SectionPreview key={section.id} section={section} />
+          <SectionPreview
+            isSelected={section.id === selectedSectionId}
+            key={section.id}
+            onSelect={() => onSelectSection(section.id)}
+            section={section}
+          />
         ))}
       </div>
     </section>
   );
 }
 
-function SectionPreview({ section }: { section: LandingPageSection }) {
+function SectionPreview({
+  isSelected,
+  onSelect,
+  section,
+}: {
+  isSelected: boolean;
+  onSelect: () => void;
+  section: LandingPageSection;
+}) {
+  const selectedClasses = isSelected
+    ? "ring-2 ring-cyan-500 ring-inset"
+    : "hover:ring-2 hover:ring-slate-300 hover:ring-inset";
+
+  return (
+    <article
+      aria-label={`Select ${section.title} section`}
+      aria-pressed={isSelected}
+      className={`cursor-pointer transition ${selectedClasses}`}
+      onClick={onSelect}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <SectionContent section={section} />
+    </article>
+  );
+}
+
+function SectionContent({ section }: { section: LandingPageSection }) {
   switch (section.type) {
     case "hero":
       return <HeroPreview section={section} />;
